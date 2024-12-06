@@ -1,0 +1,9 @@
+@startuml
+class User
+class Membership
+
+User -- Membership : has
+User --> Membership : uses
+User *-- Membership : owns
+User o-- Membership : aggregates
+@enduml
