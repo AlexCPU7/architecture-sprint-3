@@ -1,0 +1,20 @@
+@startuml
+title Тёплый дом — Диаграмма контекста
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "Пользователь", "Конечный пользователь, управляющий умным домом")
+Person(admin, "Администратор", "Администратор, управляющий системой и поддержкой пользователей")
+System(WarmHomeSystem, "Система «Тёплый дом»", "Система управления отоплением и умными устройствами")
+System(devices, "Устройства", "Управляемые и подключенные устройства")
+
+System_Ext(smartDevices, "Устройства умного дома", "Сторонние устройства, интегрируемые в систему", "Использует стандартные протоколы подключения")
+
+Rel(user, WarmHomeSystem, "Управляет отоплением и устройствами")
+Rel(admin, WarmHomeSystem, "Администрирует и поддерживает систему")
+Rel(WarmHomeSystem, smartDevices, "Интегрирует устройства")
+Rel(WarmHomeSystem, devices, "Контролирует и управляет устройствами")
+
+@enduml

@@ -1,0 +1,90 @@
+@startuml
+title Тёплый дом — Диаграмма компонентов
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "Пользователь", "Конечный пользователь, управляющий умным домом через мобильные и веб-приложения")
+Person(admin, "Администратор", "Администратор, управляющий системой и обеспечивающий поддержку пользователей")
+
+Container(app, "Мобильное приложение", "iOS/Android", "Позволяет пользователям управлять устройствами в доме, включая освещение и отопление")
+Container(webUser, "Веб приложение для пользователей", "React", "Позволяет пользователям управлять устройствами через веб-интерфейс")
+Container(webAdmin, "Веб приложение для администрации", "React", "Позволяет администраторам системное управление и аналитический надзор")
+Container(supportService, "Сервис технической поддержки", "Java/Spring", "Обрабатывает запросы пользователей на поддержку и решает технические проблемы")
+Container(analyticsService, "Сервис аналитики", "Python", "Собирает и анализирует данные взаимодействий для представления инсайтов администраторам")
+Container(paymentService, "Платежный сервис", "Java", "Управляет обработкой платежей через систему и интеграцию с банком")
+Container(serviceHub, "Хаб устройств", "C++", "Взаимодействует с подключенными устройствами и распределяет команды")
+Container(devices, "Устройства", "Различные умные устройства в доме, поддерживающие удаленное управление")
+
+System_Ext(paymentGateway, "Внешний платежный сервис (Банк)", "Обработка транзакций для обеспечения безопасности платежей")
+
+Rel(user, app, "Использует приложение для управления")
+Rel(user, webUser, "Использует веб для управления")
+Rel(admin, webAdmin, "Использует административное приложение")
+
+Rel(app, supportService, "Запросы на поддержку и помощь")
+Rel(webUser, supportService, "Запросы на поддержку и помощь")
+Rel(webAdmin, supportService, "Запросы на поддержку и помощь")
+Rel(webAdmin, analyticsService, "Получает аналитическую информацию")
+
+Rel(paymentService, paymentGateway, "Производит платежные операции")
+Rel(serviceHub, devices, "Отправляет команды и получает данные")
+
+Boundary(internal, "Система «Тёплый дом»") {
+  Component(apiGateway, "API Gateway", "Java/Spring", "Проксирует запросы ко внутренним микросервисам и управляет маршрутизацией")
+
+  Component(authService, "Микросервис: Аутентификация пользователя", "Java/Spring", "Управление аутентификацией и авторизацией пользователей")
+  Component(accountService, "Микросервис: Аккаунт пользователя", "Java/Spring", "Управление профилями и учетными записями пользователей")
+  Component(homeRoomService, "Микросервис: Дома/комнаты", "Java/Spring", "Управление данными о домах и комнатах пользователей")
+  Component(deviceService, "Микросервис: Устройства", "Java/Spring", "Обеспечивает взаимодействие и интеграцию со всеми умными устройствами")
+  Component(scenarioService, "Микросервис: Сценари", "Java/Spring", "Позволяет пользователям настраивать автоматизированные сценарии")
+  Component(monitoringService, "Микросервис: Мониторинг", "Java/Spring", "Обеспечивает сбор и анализ данных с устройств")
+
+  Component(businessLogic, "Бизнес логика", "Java", "Содержит основные бизнес-правила и логику интеграций")
+  ContainerDb(redisCache, "Redis Кэш", "In-memory database", "Обеспечивает быстрый доступ к часто запрашиваемым данным")
+  ContainerQueue(kafkaQueue, "Kafka", "Message Queue", "Обеспечивает асинхронную обработку событий между микросервисами")
+
+  ContainerDb(authDb, "База данных", "PostgreSQL", "Хранит данные об учетных записях и правах доступа")
+  ContainerDb(accountDb, "База данных", "PostgreSQL", "Обрабатывает информацию о пользователях и их профилях")
+  ContainerDb(homeRoomDb, "База данных", "PostgreSQL", "Хранит конфигурации и состояние комнат")
+  ContainerDb(deviceDb, "База данных", "PostgreSQL", "Содержит информацию об установленных устройствам")
+  ContainerDb(scenarioDb, "База данных", "PostgreSQL", "Обеспечивает данные для автоматизации сценариев")
+  ContainerDb(monitoringDb, "База данных", "PostgreSQL", "Сохраняет данные о производительности и использовании")
+
+  Rel(app, apiGateway, "API вызовы")
+  Rel(webUser, apiGateway, "API вызовы")
+  Rel(webAdmin, apiGateway, "API вызовы")
+
+  Rel(apiGateway, authService, "Направляет запросы на аутентификацию")
+  Rel(apiGateway, accountService, "Направляет запросы к пользователям")
+  Rel(apiGateway, homeRoomService, "Обрабатывает информацию по домам")
+  Rel(apiGateway, deviceService, "Распределяет команды между устройствами")
+  Rel(apiGateway, scenarioService, "Передает рабочие сценарии")
+  Rel(apiGateway, monitoringService, "Направляет запросы мониторинга")
+
+  Rel(authService, authDb, "Читает и пишет данные аутентификации")
+  Rel(accountService, accountDb, "Читает и пишет данные пользователей")
+  Rel(homeRoomService, homeRoomDb, "Обрабатывает данные помещений")
+  Rel(deviceService, deviceDb, "Читает и пишет данные устройств")
+  Rel(scenarioService, scenarioDb, "Управляет данными сценариев")
+  Rel(monitoringService, monitoringDb, "Читает данные мониторинга")
+
+  Rel(authService, businessLogic, "Взаимодействует для правил доступа")
+  Rel(accountService, businessLogic, "Взаимодействует для обслуживания профилей")
+  Rel(homeRoomService, businessLogic, "Обрабатывает события и правила для комнат")
+  Rel(deviceService, businessLogic, "Реализует логику взаимодействия устройств")
+  Rel(scenarioService, businessLogic, "Передает для выполнения сценариев")
+  Rel(monitoringService, businessLogic, "Интеграция мониторинга")
+
+  Rel(businessLogic, kafkaQueue, "Обработка событий и обмен данными")
+  Rel(kafkaQueue, businessLogic, "Получение событий и обмен данными")
+
+  Rel(businessLogic, redisCache, "Кэширование данных")
+  Rel(redisCache, businessLogic, "Обращение к кэшу")
+
+  Rel(businessLogic, serviceHub, "Интеграция с устройствами")
+  Rel(businessLogic, paymentService, "Интеграция с платежами")
+
+  Rel(analyticsService, apiGateway, "Получает данные для анализа")
+}
+
+@enduml
