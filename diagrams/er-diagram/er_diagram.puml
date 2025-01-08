@@ -8,6 +8,11 @@ class User {
   birthdate: date
 }
 
+class ManyToManyUserHouse {
+  user_id: int
+  house_id: int
+}
+
 class House {
   id: int
   title: string
@@ -88,6 +93,8 @@ User "1" <-- "0..*" House : user_id
 House "1" <-- "0..*" Room : house_id
 House "1" <-- "0..*" DeviceHub : house_id
 House "1" <-- "0..*" Device : house_id
+User "1" <-- "0..*" ManyToManyUserHouse : user_id
+House "1" <-- "0..*" ManyToManyUserHouse : house_id
 Room "1" <-- "0..*" Device : room_id
 DeviceHub "1" <-- "0..*" Device : device_hub_id
 DeviceType "1" <-- "0..*" Device : type_id
