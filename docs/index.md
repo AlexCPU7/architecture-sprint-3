@@ -98,6 +98,193 @@ title Тёплый дом — Диаграмма компонентов
 
 !includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
 
+Person(User, "Пользователь", "Конечный пользователь, управляющий умным домом через мобильные и веб-приложения")
+Person(Admin, "Администратор", "Администратор, управляющий системой и обеспечивающий поддержку пользователей")
+
+Container(App, "Мобильное приложение", "iOS/Android", "Позволяет пользователям управлять устройствами в доме, включая освещение и отопление")
+Container(WebUser, "Веб приложение для пользователей", "React", "Позволяет пользователям управлять устройствами через веб-интерфейс")
+Container(WebAdmin, "Веб приложение для администрации", "React", "Позволяет администраторам системное управление и аналитический надзор")
+Container(AnalyticsService, "Сервис аналитики", "Python", "Собирает и анализирует данные взаимодействий для представления инсайтов администраторам")
+Container(PaymentService, "Платежный сервис", "Java", "Управляет обработкой платежей через систему и интеграцию с банком")
+Container(ServiceHub, "Хаб устройств", "C++", "Взаимодействует с подключенными устройствами и распределяет команды")
+
+System_Ext(PaymentGateway, "Внешний платежный сервис (Банк)", "Обработка транзакций для обеспечения безопасности платежей")
+
+Boundary(BoundaryApiGateway, "Сервис: API Gatewa", "Java/Spring") {
+  Component(ApiGateway, "API Gateway", "Java/Spring", "Проксирует запросы ко внутренним микросервисам и управляет маршрутизацией, распределяем нагрузку")
+}
+
+ContainerQueue(KafkaQueue, "Kafka", "Message Queue", "Обеспечивает асинхронную обработку событий между микросервисами")
+
+Boundary(SupportService, "Сервис: Техническая поддержка", "Обрабатывает запросы пользователей на поддержку и решает технические проблемы") {
+  Component(SupportServiceAPI, "API ручки", "Java", "Обработка API запросов")
+  Component(SupportServiceOpen, "Открыть заявку", "", "Пользователь создает заявку со своей проблемой")
+  Component(SupportServiceUpdate, "Изменить заявку", "", "Сотрудник поддержки работает над заявкой, добавление комментарием, изменение статуса, перевод заявку на другого сотрудника и тд.")
+  Component(SupportServiceClose , "Закрыть заявку", "", "Проблема решена, заявка закрыта")
+}
+
+Rel(SupportServiceOpen, SupportServiceUpdate, "Перевод статус заявки 'В работе'")
+Rel(SupportServiceUpdate, SupportServiceClose, "Перевод статус заявки 'Закрыто'")
+
+Rel(App, SupportServiceAPI, "Создание заявки на поддержку и помощь")
+Rel(WebUser, SupportServiceAPI, "Создание заявки на поддержку и помощь")
+Rel(WebAdmin, SupportServiceAPI, "Работа над заявкой и закрытие ее")
+
+Rel(SupportServiceAPI, SupportServiceOpen, "Запрос на открытие заявки")
+Rel(SupportServiceAPI, SupportServiceUpdate, "Запрос на изменение заявки")
+Rel(SupportServiceAPI, SupportServiceClose, "Запрос на закрытие заявки")
+
+Boundary(AuthService, "Микросервис: Аутентификация пользователя", "Управление аутентификацией и авторизацией пользователей") {
+ Component(AuthAPI, "API ручки", "Java", "Обработка API запросов")
+ Component(AuthBusinessLogic, "Бизнес логика", "Java", "Бизнес логика")
+ Component(AuthAccessDB, "Контроллер для взаимодействия с BD", "Java", "Доступ к базе данных")
+}
+
+ContainerDb(AuthDb, "База данных", "PostgreSQL", "Хранит данные об учетных записях и правах доступа")
+
+Rel(ApiGateway, AuthAPI, "Направляет запросы на аутентификацию")
+Rel(AuthAPI, AuthBusinessLogic, "Передает запрос на исполнение")
+Rel(AuthBusinessLogic, AuthAccessDB, "Получает и записывает данные")
+Rel(AuthAccessDB, AuthDb, "Читает и пишет данные аутентификации")
+
+Rel(AuthBusinessLogic, KafkaQueue, "Получение и обработка событий, обмен данными")
+
+Boundary(AccountService, "Микросервис: Аккаунт пользователя", "Управление профилями и учетными записями пользователей") {
+ Component(AccountAPI, "API ручки", "Java", "Обработка API запросов")
+ Component(AccountBusinessLogic, "Бизнес логика", "Java", "Бизнес логика")
+ Component(AccountAccessDB, "Контроллер для взаимодействия с BD", "Java", "Доступ к базе данных")
+}
+
+ContainerDb(AccountDb, "База данных", "PostgreSQL", "Обрабатывает информацию о пользователях и их профилях")
+ContainerDb(AccountRedisCache, "Redis Кэш", "In-memory database", "Обеспечивает быстрый доступ к часто запрашиваемым данным")
+
+Rel(ApiGateway, AccountAPI, "Направляет запросы на аутентификацию")
+Rel(AccountAPI, AccountBusinessLogic, "Передает запрос на исполнение")
+Rel(AccountBusinessLogic, AccountAccessDB, "Получает и записывает данные")
+Rel(AccountAccessDB, AccountDb, "Читает и пишет данные аутентификации")
+
+Rel(AccountBusinessLogic, KafkaQueue, "Получение и обработка событий, обмен данными")
+Rel(AccountBusinessLogic, AccountRedisCache, "Записывает и получает данные из кэша")
+
+Boundary(HomeRoomService, "Микросервис: Дома/комнаты", "Управление данными о домах и комнатах пользователей") {
+ Component(HomeRoomAPI, "API ручки", "Java", "Обработка API запросов")
+ Component(HomeRoomBusinessLogic, "Бизнес логика", "Java", "Бизнес логика")
+ Component(HomeRoomAccessDB, "Контроллер для взаимодействия с BD", "Java", "Доступ к базе данных")
+}
+
+ContainerDb(HomeRoomDb, "База данных", "PostgreSQL", "Хранит конфигурации и состояние комнат")
+ContainerDb(HomeRoomRedisCache, "Redis Кэш", "In-memory database", "Обеспечивает быстрый доступ к часто запрашиваемым данным")
+
+Rel(ApiGateway, HomeRoomAPI, "Направляет запросы на аутентификацию")
+Rel(HomeRoomAPI, HomeRoomBusinessLogic, "Передает запрос на исполнение")
+Rel(HomeRoomBusinessLogic, HomeRoomAccessDB, "Получает и записывает данные")
+Rel(HomeRoomAccessDB, HomeRoomDb, "Читает и пишет данные аутентификации")
+
+Rel(HomeRoomBusinessLogic, KafkaQueue, "Получение и обработка событий, обмен данными")
+Rel(HomeRoomBusinessLogic, HomeRoomRedisCache, "Записывает и получает данные из кэша")
+
+Boundary(DeviceService, "Микросервис: Устройства", "Обеспечивает взаимодействие и интеграцию со всеми умными устройствами") {
+ Component(DeviceAPI, "API ручки", "Java", "Обработка API запросов")
+ Component(DeviceBusinessLogic, "Бизнес логика", "Java", "Бизнес логика")
+ Component(DeviceAccessDB, "Контроллер для взаимодействия с BD", "Java", "Доступ к базе данных")
+}
+
+ContainerDb(DeviceDb, "База данных", "PostgreSQL", "Содержит информацию об установленных устройствам")
+ContainerDb(DeviceRedisCache, "Redis Кэш", "In-memory database", "Обеспечивает быстрый доступ к часто запрашиваемым данным")
+
+Rel(ApiGateway, DeviceAPI, "Направляет запросы на аутентификацию")
+Rel(DeviceAPI, DeviceBusinessLogic, "Передает запрос на исполнение")
+Rel(DeviceBusinessLogic, DeviceAccessDB, "Получает и записывает данные")
+Rel(DeviceAccessDB, DeviceDb, "Читает и пишет данные аутентификации")
+
+Rel(DeviceBusinessLogic, KafkaQueue, "Получение и обработка событий, обмен данными")
+Rel(DeviceBusinessLogic, DeviceRedisCache, "Записывает и получает данные из кэша")
+
+Boundary(ScenarioService, "Микросервис: Сценари", "Позволяет пользователям настраивать автоматизированные сценарии") {
+ Component(ScenarioAPI, "API ручки", "Java", "Обработка API запросов")
+ Component(ScenarioBusinessLogic, "Бизнес логика", "Java", "Бизнес логика")
+ Component(ScenarioAccessDB, "Контроллер для взаимодействия с BD", "Java", "Доступ к базе данных")
+}
+
+ContainerDb(ScenarioDb, "База данных", "PostgreSQL", "Обеспечивает данные для автоматизации сценариев")
+ContainerDb(ScenarRedisCache, "Redis Кэш", "In-memory database", "Обеспечивает быстрый доступ к часто запрашиваемым данным")
+
+Rel(ApiGateway, ScenarioAPI, "Направляет запросы на аутентификацию")
+Rel(ScenarioAPI, ScenarioBusinessLogic, "Передает запрос на исполнение")
+Rel(ScenarioBusinessLogic, ScenarioAccessDB, "Получает и записывает данные")
+Rel(ScenarioAccessDB, ScenarioDb, "Читает и пишет данные аутентификации")
+
+Rel(ScenarioBusinessLogic, KafkaQueue, "Получение и обработка событий, обмен данными")
+Rel(ScenarioBusinessLogic, ScenarRedisCache, "Записывает и получает данные из кэша")
+
+Boundary(MonitoringService, "Микросервис: Мониторинг", "Обеспечивает сбор и анализ данных с устройств") {
+ Component(MonitoringAPI, "API ручки", "Java", "Обработка API запросов")
+ Component(MonitoringBusinessLogic, "Бизнес логика", "Java", "Бизнес логика")
+ Component(MonitoringAccessDB, "Контроллер для взаимодействия с BD", "Java", "Доступ к базе данных")
+}
+
+ContainerDb(MonitoringDb, "База данных", "PostgreSQL", "Сохраняет данные о производительности и использовании")
+
+Rel(ApiGateway, MonitoringAPI, "Направляет запросы на аутентификацию")
+Rel(MonitoringAPI, MonitoringBusinessLogic, "Передает запрос на исполнение")
+Rel(MonitoringBusinessLogic, MonitoringAccessDB, "Получает и записывает данные")
+Rel(MonitoringAccessDB, MonitoringDb, "Читает и пишет данные аутентификации")
+
+Rel(MonitoringBusinessLogic, KafkaQueue, "Получение и обработка событий, обмен данными")
+
+Boundary(DevicesService, "Устройства", "Различные умные устройства в доме, поддерживающие удаленное управление") {
+ Container(DeviceController, "Контроллер для взаимодействия с устройствами")
+
+ Container(HeatingDevice, "Отопление", "Устройство")
+ Container(LightBulbDevices, "Лампочка", "Устройство")
+
+ Container(DevicesActionGet, "Получает информацию", "Действие")
+ Container(DevicesActionUpdateHeating, "Изменяет настройки отопления", "Действие")
+ Container(DevicesActionUpdateLightBulb, "Изменяет цвет лампочки", "Действие")
+ Container(DevicesActionOnOff, "Включает/выключает", "Действие")
+}
+
+ Rel(DevicesActionGet, HeatingDevice, "Взаимодействие с девайсом")
+ Rel(DevicesActionUpdateHeating, HeatingDevice, "Взаимодействие с девайсом")
+ Rel(DevicesActionOnOff, HeatingDevice, "Взаимодействие с девайсом")
+
+ Rel(DevicesActionGet, LightBulbDevices, "Взаимодействие с девайсом")
+ Rel(DevicesActionUpdateLightBulb, LightBulbDevices, "Взаимодействие с девайсом")
+ Rel(DevicesActionOnOff, LightBulbDevices, "Взаимодействие с девайсом")
+
+ Rel(DeviceController, DevicesActionGet, "Отправляет команду на устройство")
+ Rel(DeviceController, DevicesActionUpdateHeating, "Отправляет команду на устройство")
+ Rel(DeviceController, DevicesActionUpdateLightBulb, "Отправляет команду на устройство")
+ Rel(DeviceController, DevicesActionOnOff, "Отправляет команду на устройство")
+
+Rel(User, App, "Использует приложение для управления")
+Rel(User, WebUser, "Использует веб для управления")
+Rel(Admin, WebAdmin, "Использует административное приложение")
+
+Rel(WebAdmin, AnalyticsService, "Получает аналитическую информацию")
+
+Rel(PaymentService, PaymentGateway, "Производит платежные операции")
+Rel(ServiceHub, DeviceController, "Отправляет команды и получает данные")
+
+Rel(App, ApiGateway, "API вызовы")
+Rel(WebUser, ApiGateway, "API вызовы")
+Rel(WebAdmin, ApiGateway, "API вызовы")
+
+Rel(KafkaQueue, ServiceHub, "Интеграция с устройствами")
+Rel(KafkaQueue, PaymentService, "Интеграция с платежами")
+
+Rel(AnalyticsService, ApiGateway, "Получает данные для анализа")
+
+@enduml
+```
+
+### Уровень 3. Диаграмма компонентов — Component diagram (old)
+```puml
+@startuml
+title Тёплый дом — Диаграмма компонентов
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
 Person(user, "Пользователь", "Конечный пользователь, управляющий умным домом через мобильные и веб-приложения")
 Person(admin, "Администратор", "Администратор, управляющий системой и обеспечивающий поддержку пользователей")
 
