@@ -1,0 +1,110 @@
+@startuml
+title Тёплый дом — Диаграмма кода
+
+class User {
+  id: int
+  name: string
+  surname: string
+  birthdate: date
+}
+
+class ManyToManyUserHouse {
+  user_id: int
+  house_id: int
+}
+
+class House {
+  id: int
+  title: string
+  user_id: int
+}
+
+class Room {
+  id: int
+  title: string
+  house_id: int
+}
+
+class DeviceHub {
+  id: int
+  serial_number: string
+  house_id: int
+}
+
+class DeviceType {
+  id: int
+  title: string
+}
+
+class Device {
+  id: int
+  title: string
+  type_id: int
+  house_id: int
+  room_id: int
+  device_hub_id: int
+  serial_number: string
+  status: string
+}
+
+class TelemetryData {
+  id: int
+  title: string
+  num: int
+}
+
+class DeviceTelemetryData {
+  device_id: int
+  telemetry_data_id: int
+  data: json
+}
+
+class Scenario {
+  id: int
+  title: string
+  active: bool
+}
+
+class ScenarioTerms {
+  id: int
+  title: string
+  active: bool
+  device_id: int
+  data: json
+}
+
+class ScenarioCommands {
+  id: int
+  device_id: int
+  data: json
+}
+
+class ManyToManyScenarioCommands {
+  scenario_id: int
+  scenario_commands_id: int
+}
+
+class ManyToManyScenarioTerms {
+  scenario_id: int
+  scenario_terms_id: int
+}
+
+User "1" <-- "0..*" House : user_id
+House "1" <-- "0..*" Room : house_id
+House "1" <-- "0..*" DeviceHub : house_id
+House "1" <-- "0..*" Device : house_id
+User "1" <-- "0..*" ManyToManyUserHouse : user_id
+House "1" <-- "0..*" ManyToManyUserHouse : house_id
+Room "1" <-- "0..*" Device : room_id
+DeviceHub "1" <-- "0..*" Device : device_hub_id
+DeviceType "1" <-- "0..*" Device : type_id
+Device "1" <-- "0..*" DeviceTelemetryData : device_id
+TelemetryData "1" <-- "0..*" DeviceTelemetryData : telemetry_data_id
+Device "1" <-- "0..*" ScenarioTerms : device_id
+Device "1" <-- "0..*" ScenarioCommands : device_id
+Scenario "1" <-- "0..*" ManyToManyScenarioCommands : scenario_id
+ScenarioCommands "1" <-- "0..*" ManyToManyScenarioCommands : scenario_commands_id
+Scenario "1" <-- "0..*" ManyToManyScenarioTerms : scenario_id
+ScenarioTerms "1" <-- "0..*" ManyToManyScenarioTerms : scenario_terms_id
+
+@enduml

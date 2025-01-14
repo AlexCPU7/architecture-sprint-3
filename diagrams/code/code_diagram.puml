@@ -1,0 +1,127 @@
+@startuml
+title Тёплый дом — Диаграмма кода
+
+' Компонент API Gateway
+class APIGateway {
+  +routeRequest(request : Request)
+  +authenticateRequest(request : Request)
+  --
+  -authService : AuthService
+  -accountService : AccountService
+  -homeRoomService : HomeRoomService
+  -deviceService : DeviceService
+  -scenarioService : ScenarioService
+  -monitoringService : MonitoringService
+}
+
+' Компонент аутентификации
+class AuthService {
+  +authenticate(credentials : Credentials) : User
+  +authorize(user : User, action : String) : boolean
+  --
+  -validateToken(token : string) : boolean
+}
+
+' Компонент управления аккаунтами
+class AccountService {
+  +createAccount(user : User) : Account
+  +updateAccount(account : Account) : void
+  --
+  -sendWelcomeEmail(user : User)
+}
+
+' Компонент управления домами и комнатами
+class HomeRoomService {
+  +addHome(home : Home) : void
+  +addRoom(room : Room) : void
+  +getHomeDetails(homeId : UUID) : Home
+  --
+  -validateRoomConfig(room : Room) : boolean
+}
+
+' Компонент управления устройствами
+class DeviceService {
+  +registerDevice(device : Device) : void
+  +updateDeviceStatus(deviceId : UUID, status : DeviceStatus) : void
+  +monitorDevice(deviceId : UUID) : MonitoringData
+  --
+  -sendDeviceUpdateNotification(device : Device)
+}
+
+' Компонент управления сценариями
+class ScenarioService {
+  +createScenario(scenario : Scenario) : void
+  +executeScenario(scenarioId : UUID) : void
+  +listUserScenarios(userId : UUID) : List<Scenario>
+  --
+  -validateScenario(scenario : Scenario) : boolean
+}
+
+' Компонент мониторинга
+class MonitoringService {
+  +logDeviceData(deviceId : UUID, data : Data) : void
+  +retrieveMonitoringData(deviceId : UUID) : MonitoringData
+  +generateDeviceReport(deviceId : UUID) : String
+  --
+  -aggregateData(deviceId : UUID) : List<Data>
+}
+
+class Credentials {
+  +username : String
+  +password : String
+}
+
+class User {
+  +userId : UUID
+  +name : String
+  +email : String
+}
+
+
+class Home {
+  +homeId : UUID
+  +address : String
+  +rooms : List<Room>
+}
+
+class Room {
+  +roomId : UUID
+  +homeId : UUID
+  +name : String
+}
+
+class Device {
+  +deviceId : UUID
+  +status : Bool
+  +type : String
+}
+
+class Scenario {
+  +scenarioId : UUID
+  +userId : UUID
+  +description : String
+}
+
+class MonitoringData {
+  +deviceId : UUID
+  +data : Data
+}
+
+APIGateway o-- AuthService
+APIGateway o-- AccountService
+APIGateway o-- HomeRoomService
+APIGateway o-- DeviceService
+APIGateway o-- ScenarioService
+APIGateway o-- MonitoringService
+
+AuthService ..> User
+AccountService ..> User
+HomeRoomService ..> Home
+HomeRoomService ..> Room
+DeviceService ..> Device
+ScenarioService ..> Scenario
+
+AuthService ..> Credentials
+MonitoringService ..> MonitoringData
+
+@enduml

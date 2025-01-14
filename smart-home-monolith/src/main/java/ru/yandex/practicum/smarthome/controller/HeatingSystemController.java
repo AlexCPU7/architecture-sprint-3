@@ -16,7 +16,7 @@ import ru.yandex.practicum.smarthome.dto.HeatingSystemDto;
 import ru.yandex.practicum.smarthome.service.HeatingSystemService;
 
 @RestController
-@RequestMapping("/api/heating")
+@RequestMapping("/api/heating")  // отопление
 @RequiredArgsConstructor
 public class HeatingSystemController {
 
@@ -26,34 +26,34 @@ public class HeatingSystemController {
 
     @GetMapping("/{id}")
     public ResponseEntity<HeatingSystemDto> getHeatingSystem(@PathVariable("id") Long id) {
-        logger.info("Fetching heating system with id {}", id);
+        logger.info("Fetching heating system with id {}", id);  // Получение системы отопления с идентификатором {}
         return ResponseEntity.ok(heatingSystemService.getHeatingSystem(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<HeatingSystemDto> updateHeatingSystem(@PathVariable("id") Long id,
                                                                 @RequestBody HeatingSystemDto heatingSystemDto) {
-        logger.info("Updating heating system with id {}", id);
+        logger.info("Updating heating system with id {}", id);  // Обновление системы отопления с идентификатором {}
         return ResponseEntity.ok(heatingSystemService.updateHeatingSystem(id, heatingSystemDto));
     }
 
     @PostMapping("/{id}/turn-on")
     public ResponseEntity<Void> turnOn(@PathVariable("id") Long id) {
-        logger.info("Turning on heating system with id {}", id);
+        logger.info("Turning on heating system with id {}", id);  // Включение системы отопления с идентификатором {}
         heatingSystemService.turnOn(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/turn-off")
     public ResponseEntity<Void> turnOff(@PathVariable("id") Long id) {
-        logger.info("Turning off heating system with id {}", id);
+        logger.info("Turning off heating system with id {}", id);  // Выключение системы отопления с идентификатором {}
         heatingSystemService.turnOff(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/set-temperature")
     public ResponseEntity<Void> setTargetTemperature(@PathVariable("id") Long id, @RequestParam double temperature) {
-        logger.info("Setting target temperature to {} for heating system with id {}", temperature, id);
+        logger.info("Setting target temperature to {} for heating system with id {}", temperature, id);  // Установка целевой температуры на {} для системы отопления с идентификатором {}
         heatingSystemService.setTargetTemperature(id, temperature);
         // TODO: Implement automatic temperature maintenance logic in the service layer
         return ResponseEntity.noContent().build();
@@ -61,7 +61,7 @@ public class HeatingSystemController {
 
     @GetMapping("/{id}/current-temperature")
     public ResponseEntity<Double> getCurrentTemperature(@PathVariable("id") Long id) {
-        logger.info("Fetching current temperature for heating system with id {}", id);
+        logger.info("Fetching current temperature for heating system with id {}", id);  // Получение текущей температуры для системы отопления с идентификатором {}
         return ResponseEntity.ok(heatingSystemService.getCurrentTemperature(id));
     }
 

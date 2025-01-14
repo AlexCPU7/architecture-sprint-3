@@ -1,0 +1,52 @@
+@startuml
+title Тёплый дом — Диаграмма контейнеров
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "Пользователь", "Конечный пользователь, управляющий умным домом")
+Person(admin, "Администратор", "Администратор, управляющий системой и поддержкой пользователей")
+
+Container(app, "Мобильное приложение", "iOS/Android", "Позволяет пользователям управлять устройствами в доме")
+Container(webUser, "Веб приложение для пользователей", "React", "Позволяет пользователям управлять устройствами в доме")
+Container(webAdmin, "Веб приложение для администрации", "React", "Позволяет администраторам управлять системой")
+Container(api, "API «Тёплый дом»", "Java/Spring", "Предоставляет функциональность системы «Тёплый дом»")
+Container(supportService, "Сервис технической поддержки", "Java/Spring", "Обрабатывает запросы поддержки пользователей")
+Container(analyticsService, "Сервис аналитики", "Python", "Анализ данных взаимодействия")
+Container(serviceHub, "Хаб устройств", "C++", "Управление подключенными устройствами")
+Container(devices, "Устройства", "Управляемые и подключенные устройства")
+Container(paymentService, "Платежный сервис", "Java", "Обрабатывает платежи пользователей")
+
+ContainerDb(redisDB, "Redis Кэш", "In-memory database", "Кэширование данных для быстрого доступа")
+ContainerDb(postgresDB, "База данных PostgreSQL", "SQL Database", "Хранение данных пользователей и устройств")
+ContainerQueue(kafkaQueue, "Kafka", "Message Queue", "Обработка событий и асинхронные коммуникации")
+
+System_Ext(externalDevices, "Внешние системы умного дома", "Сторонние устройства", "Интеграция через стандартные протоколы")
+System_Ext(paymentGateway, "Внешний платежный сервис (Банк)", "Обработка платежей")
+
+Rel(user, app, "Использует для управления")
+Rel(user, webUser, "Использует для управления")
+Rel(admin, webAdmin, "Использует для администрирования")
+
+Rel(app, supportService, "Поддержка")
+Rel(app, api, "Использует")
+Rel(webUser, supportService, "Поддержка")
+Rel(webUser, api, "Использует")
+
+Rel(webAdmin, supportService, "Поддержка")
+Rel(webAdmin, analyticsService, "Использует")
+
+Rel(analyticsService, api, "Запрос данных")
+
+Rel(api, redisDB, "Кэширование данных")
+Rel(api, postgresDB, "Хранение основных данных")
+Rel(api, serviceHub, "Управление устройствами")
+Rel(api, externalDevices, "Интеграция устройств")
+Rel(api, paymentService, "Обработка платежей")
+Rel(api, kafkaQueue, "Публикация и получение сообщений")
+Rel(kafkaQueue, api, "Отправка сообщений")
+
+Rel(paymentService, paymentGateway, "Обработка платежей")
+
+Rel(serviceHub, devices, "Контроль и управление устройствами")
+
+@enduml
